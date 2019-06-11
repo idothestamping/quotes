@@ -3,69 +3,72 @@
  */
 package quotes;
 
-import com.google.common.collect.Iterables;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.FileReader;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.util.Scanner;
+import java.net.URL;
 
 public class App {
 
-    public static void main(String[] args)  {
-        String jsonFile = "src/main/resources/recentquotes.json";
-        Quotes[] result = getQuote(jsonFile);
-//        Quotes[] result = getQuoteWithGson(jsonFile);
-
-
-        int random = (int)(Math.random() * (result.length - 1) + 1);
-        System.out.println(result[random].toString());
-    }
-
-    public static Quotes[] getQuote(String jsonFile) {
-        Gson gson = new Gson();
-        List<Quotes> newQuote = new ArrayList<>();
-        Quotes[] itemsArray = new Quotes[newQuote.size()];
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(jsonFile));
-            Type newtype = new TypeToken<List<Quotes>>(){}.getType();
-            newQuote = gson.fromJson(br, newtype);
-            itemsArray = Iterables.toArray(newQuote, Quotes.class);
-
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-        return itemsArray;
-    }
-
-    public static Quotes[] getQuoteWithGson(String jsonFile) {
-        Gson gson = new Gson();
-        JsonReader reader = new JsonReader(new FileReader(jsonFile));
-        Quotes[] itemsArray = gson.fromJson(reader, Quotes.class);
-
-//        List<Quotes> newQuote = new ArrayList<>();
-//        Quotes[] itemsArray = new Quotes[newQuote.size()];
-//
-//        try {
-//            BufferedReader br = new BufferedReader(new FileReader(jsonFile));
-//            Type newtype = new TypeToken<List<Quotes>>(){}.getType();
-//            newQuote = gson.fromJson(br, newtype);
-//            itemsArray = Iterables.toArray(newQuote, Quotes.class);
-//
-//        } catch (IOException e) {
-//            System.out.println(e);
+    public static void main(String[] args) throws IOException {
+        
+//  Example:
+//        {
+//            "quoteText": "Peace cannot be kept by force. It can only be achieved by understanding.",
+//                "quoteAuthor": "Albert Einstein",
+//                "senderName": "",
+//                "senderLink": "",
+//                "quoteLink": "http://forismatic.com/en/1bbb4baea1/"
 //        }
-        return itemsArray;
+
+        getUrlQuote("http://swquotesapi.digitaljedi.dk/api/SWQuote/RandomStarWarsQuote");
     }
 
+    public static void getFileQuote() throws IOException {
+        String allQuotes = read("src/main/resources/recentquotes.json");
+        Gson gson = new Gson();
+        Quotes[] quotes = gson.fromJson(allQuotes, Quotes[].class );
+        int random = (int)(Math.random() * quotes.length);
+        System.out.println(quotes[random]);
+    }
+
+    public static void getUrlQuote(String quoteUrl) throws IOException {
+        try {
+            URL url = new URL(quoteUrl);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            BufferedReader reader = new BufferedReader(new InputStreamReader((con.getInputStream())));
+
+            Gson gson = new Gson();
+            ApiQuote randomQuote = gson.fromJson(reader, ApiQuote.class);
+            System.out.println(randomQuote);
+            write(randomQuote);
+
+        } catch (MalformedURLException e) {
+            System.out.println("exception: " + e);
+            getFileQuote();
+        }
+    }
+
+    public static String read(String fileName) throws IOException {
+        Scanner sc = new Scanner(new File(fileName));
+        StringBuilder strings = new StringBuilder();
+        while(sc.hasNextLine()){
+            strings.append(sc.nextLine());
+        }
+        return strings.toString();
+    }
+
+    public  static void write(ApiQuote t) throws IOException {
+        Gson gson = new Gson();
+        String gsonParsing = gson.toJson(t);
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/test.json", true));
+        writer.newLine();
+        writer.write(gsonParsing);
+        writer.close();
+    }
 }
-
-
