@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 public class AppTest {
     @Test public void testQuotes() {
-        App classUnderTest = new App();
-        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
+        Quotes[] quotes = new Quotes[];
+        assertNotNull("app should have a greeting", quotes[0], Quotes.getQuote(quotes));
     }
 }
