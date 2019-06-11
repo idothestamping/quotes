@@ -1,16 +1,24 @@
 package quotes;
 
 public class Quotes {
-    private String text;
-    private String author;
+    public String author;
+    public String text;
 
-    public Quotes(String text, String author) {
+    public Quotes(String author, String text) {
         this.author = author;
         this.text = text;
     }
 
-    @Override
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    //    @Override
     public String toString() {
-        return String.format("Author: %s Quote: %s", this.author, this.text);
+        return String.format("Author: %s\nQuote: %s", this.author, this.text);
     }
 }
